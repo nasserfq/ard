@@ -53,11 +53,17 @@ jobs:
             libfontconfig1-dev libfreetype-dev
       - name: macOS signing certificate
         if: runner.os == 'macOS'
-        # Signed and notarized when these repository secrets exist; otherwise ad-hoc (unsigned).
+        # The release promises a signed, notarized Mac app, so it stops here without the secrets.
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
+          for v in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            if [[ -z "${!v}" ]]; then echo "::error::repository secret $v is missing"; exit 1; fi
+          done
           packaging/macos/import-cert.sh  # sets MACOS_SIGN_IDENTITY for the next step
       - name: macOS app (DMG), build
         if: runner.os == 'macOS'
