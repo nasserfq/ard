@@ -85,6 +85,8 @@ pub use clock::{monotonic_secs, now_ms};
 pub use dialogs::credits;
 #[cfg(not(target_arch = "wasm32"))]
 use dialogs::updates_ui;
+#[cfg(not(target_arch = "wasm32"))]
+mod ai_connect_ui;
 pub use ime_hooks::install_ime_pass_hooks;
 pub use panels as panes;
 pub use panels::animtimeline;
@@ -160,6 +162,12 @@ pub const UI_COMMANDS: &[(&str, &str, Option<&str>, &str)] = &[
     ),
     ("app.about", "About DeckCraft", None, "{}"),
     ("app.checkUpdates", "Check for Updates…", None, "{}"),
+    (
+        "app.connectAi",
+        "Connect to AI Apps",
+        None,
+        "{client?: claude|claudeCode|codex|cursor|vscode|windsurf|gemini|lmstudio, disconnect?: bool} (opens the window without client) → {client, state} or {client, link}",
+    ),
     ("app.palette", "Command Palette", Some("Cmd+Shift+P"), "{}"),
     ("app.preferences", "Preferences…", Some("Cmd+,"), "{}"),
     ("app.language", "Interface Language", None, "{language?: auto|en|de} → {language, current, available}"),
@@ -319,6 +327,9 @@ pub struct SlideApp {
     print_previews: app::files::PrintPreviews,
     #[cfg(not(target_arch = "wasm32"))]
     updates_rt: updates_ui::Runtime,
+    /// File › About › Connect to AI Apps: the window and its last result (desktop only).
+    #[cfg(not(target_arch = "wasm32"))]
+    connect_ai: ai_connect_ui::Runtime,
     /// Text for the system clipboard from a Copy or Cut command, handed over on the next frame.
     pending_copy: Option<String>,
     /// Bounded screenshot completion slots for the control channel (egui 0.37 callbacks).

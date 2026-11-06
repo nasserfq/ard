@@ -85,6 +85,8 @@ impl SlideApp {
             print_previews: files::PrintPreviews::default(),
             #[cfg(not(target_arch = "wasm32"))]
             updates_rt: updates_ui::Runtime::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            connect_ai: Default::default(),
             pending_copy: None,
             capture: capture::Capture::default(),
             styled: false,
@@ -360,6 +362,8 @@ impl SlideApp {
         dialogs::show(self, &ctx);
         #[cfg(not(target_arch = "wasm32"))]
         updates_ui::show(self, &ctx);
+        #[cfg(not(target_arch = "wasm32"))]
+        crate::ai_connect_ui::show(self, &ctx);
         menus::palette(self, &ctx);
         for url in std::mem::take(&mut self.pending_urls) {
             ctx.open_url(egui::OpenUrl::new_tab(url));

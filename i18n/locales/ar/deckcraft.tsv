@@ -841,3 +841,25 @@
 	Version {version}	الإصدار {version}
 	Project Links	روابط المشروع
 	View	طرق العرض
+	Connect to AI Apps	ربط مع الذكاء الاصطناعي
+	Connect	ربط
+	Let Claude and other AI apps build your presentations in Ard (MCP).	اجعل Claude وغيره من تطبيقات الذكاء الاصطناعي ينشئ عروضك في عرض (MCP).
+	Connect Ard to an AI app so it can build, write and design your presentations when you ask it to. Press Connect next to the app, then restart it.	اربط عرض بتطبيق ذكاء اصطناعي، فينشئ عروضك التقديمية ويكتبها ويصممها حين تطلب منه ذلك بكلامك. اضغط «ربط» بجانب التطبيق ثم أعد تشغيله.
+	The MCP server (ard-cli) isn't next to Ard. Download Ard again.	لم يُعثر على خادم MCP ‏(ard-cli) بجانب عرض. نزّل عرض من جديد.
+	Move Ard to the Applications folder and open it from there first, or the connection stops working once it closes.	انقل عرض إلى مجلد التطبيقات (Applications) وافتحه من هناك أولًا، وإلا توقّف الربط بعد إغلاقه.
+	No AI app we know of is installed here. Install one, such as Claude, then open this window again.	لم نجد على جهازك تطبيق ذكاء اصطناعي نعرفه. ثبّت أحدها، مثل Claude، ثم افتح هذه النافذة من جديد.
+	Not installed	غير مثبت
+	Not connected	غير مربوط
+	Connected ✓	مربوط ✓
+	Needs updating	يحتاج تحديثًا
+	Its settings can't be read	تعذّرت قراءة إعداداته
+	Disconnect	إلغاء الربط
+	Not installed here:	غير مثبتة على جهازك:
+	Disconnected.	أُلغي الربط.
+	Connected. Restart {app}.	تم الربط. أعد تشغيل {app}.
+	Connected.	تم الربط.
+	Confirm the install in {app}.	وافق على الإضافة في {app}.
+	Couldn't connect:	تعذّر الربط:
+	Another MCP app? Copy the settings and paste them into its MCP servers settings.	تطبيق آخر يدعم MCP؟ انسخ الإعداد والصقه في إعدادات خوادم MCP فيه.
+	Copy Settings	نسخ الإعداد
+	Settings copied.	نُسخ الإعداد.

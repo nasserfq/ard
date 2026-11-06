@@ -2453,3 +2453,26 @@ fn comments_pane_keeps_its_width_and_resizes() {
     let wide = drag(&mut h, -150.0);
     assert!(wide > narrow + 140.0, "dragging left widens the pane: {narrow} -> {wide}");
 }
+
+/// File › About › Connect to AI Apps opens its window, the command connects only the AI apps it
+/// knows, and its labels are in the Arabic catalog.
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn connect_ai_apps_window_opens_and_unknown_apps_are_refused() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = harness();
+    h.run_steps(2);
+    assert_eq!(h.state_mut().run("app.connectAi", json!({})).unwrap(), Value::Null);
+    let e = h.state_mut().run("app.connectAi", json!({"client": "nope"})).unwrap_err();
+    assert!(e.contains("unknown AI app") && e.contains("claudeCode"), "{e}");
+    h.run_steps(3);
+    assert!(h.query_by_label("Connect to AI Apps").is_some(), "the window shows");
+    h.get_by_label("Close").click();
+    h.run_steps(3);
+    assert!(h.query_by_label("Connect to AI Apps").is_none(), "Close closes it");
+    if let Some(ar) = crate::i18n::Lang::from_code("ar") {
+        for text in ["Connect to AI Apps", "Connect", "Disconnect", "Copy Settings", "Connected ✓"] {
+            assert_ne!(crate::i18n::tr(ar, text), text, "{text} has an Arabic translation");
+        }
+    }
+}

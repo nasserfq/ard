@@ -27,6 +27,21 @@ lost-reply and reconnect tests.
 }
 ```
 
+## Connecting AI apps with one click (عرض)
+
+File ▸ About ▸ Connect to AI Apps (also `app.connectAi` in the command palette) lists the AI apps
+installed on this computer and adds `ard-cli mcp` (from the app's own folder) to their settings with
+one button each, or takes it out again: Claude, Claude Code, Codex, Cursor, VS Code, Windsurf,
+Gemini CLI and LM Studio. It writes each app's own settings file, keeps everything else in it,
+saves the original once as `<file>.ard-backup`, and never rewrites a file it can't read; a VS Code
+`mcp.json` with comments gets VS Code's own install link instead. Copy Settings gives any other MCP
+app the `mcpServers` block to paste. The logic is the UI-free `ai-connect` crate;
+`{"client": "cursor"}` connects without the window, `"disconnect": true` undoes it.
+
+macOS releases also carry `ard-claude-extension-macos.mcpb` (`packaging/mcpb/make-mcpb.sh`): a
+Claude desktop extension that runs the server inside `/Applications/عرض.app`, so opening it installs
+عرض into Claude through Claude's own window and it updates with the app.
+
 ## Confining file access
 
 ```sh

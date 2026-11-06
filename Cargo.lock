@@ -130,6 +130,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ai-connect"
+version = "0.15.0"
+dependencies = [
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "allocator-api2"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1297,6 +1306,7 @@ dependencies = [
 name = "deckcraft-ui-egui"
 version = "0.15.0"
 dependencies = [
+ "ai-connect",
  "craft-i18n",
  "craft-ui",
  "craft-update",
