@@ -32,6 +32,9 @@ pub(super) fn title_geometry(integrated: bool) -> (f32, f32, f32) {
 pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let (height, left, control_h) = title_geometry(app.integrated_titlebar);
+    // Drawn mirrored (عرض's right-to-left interface): the traffic lights' room is on the right of
+    // the layout, so the actions there end before it and quick access starts at the edge.
+    let (left, right_edge) = if crate::mirror::active() { (10.0, left.max(10.0)) } else { (left, 10.0) };
     egui::Panel::top("title_bar").exact_size(height).frame(egui::Frame::NONE.fill(t.chrome)).show(ui, |ui| {
         let rect = ui.max_rect();
         // Dragging the empty title bar moves the window.
@@ -54,13 +57,16 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         let has_doc = app.session.active().is_some();
         let dirty = app.session.active().is_some_and(|d| d.is_dirty());
         crate::qat::show(app, &mut child);
-        let title =
-            app.session.active().map(|d| format!("{}{}", d.title(), if dirty { tl!(" — Edited") } else { "" })).unwrap_or_else(|| "DeckCraft".into());
+        let title = app
+            .session
+            .active()
+            .map(|d| format!("{}{}", d.title(), if dirty { tl!(" — Edited") } else { "" }))
+            .unwrap_or_else(|| crate::APP_NAME.into());
         ui.painter().text(rect.center(), Align2::CENTER_CENTER, title, theme::font(13.0), t.text);
         // Right side.
         let mut right = ui.new_child(
             egui::UiBuilder::new()
-                .max_rect(Rect::from_min_max(pos2(rect.max.x - 320.0, rect.min.y), pos2(rect.max.x - 10.0, rect.max.y)))
+                .max_rect(Rect::from_min_max(pos2(rect.max.x - 310.0 - right_edge, rect.min.y), pos2(rect.max.x - right_edge, rect.max.y)))
                 .layout(egui::Layout::right_to_left(egui::Align::Center)),
         );
         right.spacing_mut().item_spacing.x = 6.0;

@@ -479,9 +479,14 @@ fn dim(ui: &mut Ui, text: &str) {
 /// A link with an arrow (More themes →): true when clicked.
 fn arrow_link(ui: &mut Ui, text: &str) -> bool {
     let t = Tokens::get(ui.ctx());
-    ui.add(egui::Label::new(RichText::new(format!("{}  →", tl!(text))).font(theme::font(12.5)).color(t.accent)).sense(Sense::click()))
-        .on_hover_cursor(egui::CursorIcon::PointingHand)
-        .clicked()
+    ui.add(
+        egui::Label::new(
+            RichText::new(format!("{}  {}", tl!(text), if crate::mirror::active() { "←" } else { "→" })).font(theme::font(12.5)).color(t.accent),
+        )
+        .sense(Sense::click()),
+    )
+    .on_hover_cursor(egui::CursorIcon::PointingHand)
+    .clicked()
 }
 
 /// A search box; true when its text changed.

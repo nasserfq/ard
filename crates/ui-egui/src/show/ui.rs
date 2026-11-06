@@ -121,6 +121,8 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
         show.last_move = now;
     }
     let full = ui.max_rect();
+    // A slide show is drawn as it is, never mirrored.
+    crate::mirror::keep(&ctx, full);
     let avail = if show.reading { Rect::from_min_max(full.min, pos2(full.max.x, full.max.y - 34.0)) } else { full };
     let srect = fit(avail, &doc);
     let pointer = ctx.input(|i| i.pointer.interact_pos());

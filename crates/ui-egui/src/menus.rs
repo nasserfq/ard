@@ -123,7 +123,7 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
     let t = Tokens::get(ctx);
     let mut close = false;
     let mut run: Option<String> = None;
-    egui::Window::new("command_palette")
+    let shown = egui::Window::new("command_palette")
         .title_bar(false)
         .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 90.0))
         .fixed_size(egui::vec2(520.0, 380.0))
@@ -170,6 +170,9 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
                 }
             });
         });
+    if let Some(shown) = &shown {
+        crate::mirror::overlay(ctx, shown.response.layer_id);
+    }
     if let Some(id) = run {
         let _ = app.run(&id, json!({}));
         close = true;

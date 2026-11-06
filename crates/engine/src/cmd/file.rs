@@ -115,7 +115,11 @@ fn new(s: &mut Session, p: &Value) -> Result<Value> {
         (doc, chosen)
     } else {
         let theme = theme_name.and_then(theme_named).unwrap_or_default();
-        (defaults::blank_presentation(size, theme, !bool_or(p, "blank", false)), None)
+        let mut doc = defaults::blank_presentation(size, theme, !bool_or(p, "blank", false));
+        if let Some(lang) = s.new_rtl_lang.as_deref() {
+            defaults::write_right_to_left(&mut doc, lang);
+        }
+        (doc, None)
     };
     let slides = doc.slides.len();
     let title = s.next_untitled();

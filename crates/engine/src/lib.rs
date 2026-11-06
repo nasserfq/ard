@@ -502,6 +502,9 @@ pub struct Session {
     depth: u32,
     /// Crash-recovery folder (the app sets it; saving or closing a presentation removes its entry).
     pub recovery_dir: Option<std::path::PathBuf>,
+    /// New blank presentations are written right to left in this language (the app sets it to
+    /// `ar-SA` while عرض's interface is Arabic); `None`: left to right, as DeckCraft.
+    pub new_rtl_lang: Option<String>,
     /// Media playback state, written by the UI host every frame (empty without a host).
     pub media_status: std::collections::HashMap<ShapeId, MediaStatus>,
     /// Animated GIF pictures paused with `media.gifPlay` (the others play).
@@ -544,6 +547,7 @@ impl Session {
             anim_painter: None,
             depth: 0,
             recovery_dir: None,
+            new_rtl_lang: None,
             media_status: Default::default(),
             gif_paused: Default::default(),
             mac_keys: cfg!(target_os = "macos"),
@@ -628,6 +632,9 @@ impl Session {
     }
     pub fn next_untitled(&mut self) -> String {
         self.untitled += 1;
+        if self.new_rtl_lang.as_deref().is_some_and(|l| l.starts_with("ar")) {
+            return format!("عرض تقديمي {}", self.untitled);
+        }
         format!("Presentation{}", self.untitled)
     }
 

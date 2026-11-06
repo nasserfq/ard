@@ -7,13 +7,13 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>DeckCraft</string>
+  <string>عرض</string>
   <key>CFBundleName</key>
-  <string>DeckCraft</string>
+  <string>عرض</string>
   <key>CFBundleExecutable</key>
   <string>DeckCraft</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.deckcraft</string>
+  <string>ai.storyteller.ard</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -43,7 +43,7 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the DeckCraft authors. MIT OR Apache-2.0.</string>
+  <string>Copyright © 2026 Nasser Alqahtani and the DeckCraft authors. MIT OR Apache-2.0.</string>
 
   <!-- The documents DeckCraft opens, so Finder's Open With and "Change All" can offer it (the
        Apple events arrive through apps/deckcraft/src/apple_events.rs). PowerPoint stays the

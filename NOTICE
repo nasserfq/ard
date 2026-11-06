@@ -1,11 +1,25 @@
-DeckCraft
-Copyright (c) 2026 ArtCraft Team and the DeckCraft contributors.
-Licensed under the MIT License or the Apache License, Version 2.0, at your option
+عرض (Ard)
+Copyright (c) 2026 Nasser Alqahtani.
+A modified version of DeckCraft: Nasser Alqahtani changed its files for the Arabic, right-to-left
+عرض (2026); every change is recorded in the history of https://github.com/nasserfq/ard.
+Licensed, like DeckCraft, under the MIT License or the Apache License, Version 2.0, at your option
 (LICENSE-MIT, LICENSE-APACHE).
 
-The ArtCraft name, wordmark and logos in docs/brand/ are trademarks of the ArtCraft Team. They are
-not open source and are not covered by the license above; their terms are in
-docs/brand/LICENSE-brand.txt.
+Based on DeckCraft
+Copyright (c) 2026 ArtCraft Team and the DeckCraft contributors.
+Licensed under the MIT License or the Apache License, Version 2.0, at your option
+(LICENSE-MIT, LICENSE-APACHE). Source: https://github.com/storytold/deckcraft
+
+crates/craft-update is craft-update from https://github.com/storytold/craft-libs (rev c5a1cbf),
+by the same team under the same licenses, modified for عرض (its signing identity and Arabic
+update dialogs).
+
+The ArtCraft and DeckCraft names, wordmarks and logos are trademarks of the ArtCraft Team. They are
+not covered by the license above and عرض does not use them; it names DeckCraft only to say what it
+is based on. عرض is not made or endorsed by the ArtCraft Team.
+
+The عرض logo's lettering is outlined from Noto Kufi Arabic (SIL Open Font License 1.1); no font
+file is bundled.
 
 Third-party material
 

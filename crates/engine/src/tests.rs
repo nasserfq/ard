@@ -7029,3 +7029,20 @@ fn outline_export_skips_footer_date_and_slide_number() {
     assert!(rtf.contains("Agenda") && rtf.contains("First point"), "{rtf:?}");
     assert!(!rtf.contains("Company Confidential") && !rtf.contains("1 May 2026"), "{rtf:?}");
 }
+
+#[test]
+fn arabic_blank_presentations_read_right_to_left() {
+    let mut s = Session::new();
+    s.new_rtl_lang = Some("ar-SA".into());
+    s.execute("file.new", &json!({})).unwrap();
+    let doc = &s.active().unwrap().doc;
+    let m = &doc.masters[0];
+    let body = m.body_style.level(0).unwrap();
+    assert_eq!(body.para.rtl, Some(true));
+    assert_eq!(body.para.align, Some(deckcraft_model::text::Align::Right));
+    assert_eq!(body.run.lang.as_deref(), Some("ar-SA"));
+    // Without the setting, as DeckCraft: left to right.
+    let mut s = Session::new();
+    s.execute("file.new", &json!({})).unwrap();
+    assert_eq!(s.active().unwrap().doc.masters[0].body_style.level(0).unwrap().para.rtl, None);
+}

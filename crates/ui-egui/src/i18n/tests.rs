@@ -33,7 +33,7 @@ fn harness(app: SlideApp) -> Harness<'static, SlideApp> {
 
 #[test]
 fn a_string_without_a_translation_stays_english() {
-    let de = fixture_lang("de", DE);
+    let de = fixture_lang("ar", DE);
     assert_eq!(tr(de, "Insert"), "Einfügen");
     assert_eq!(tr(de, "New\nSlide"), "Neue\nFolie", "`\\n` in a catalog is a line break");
     assert_eq!(tr(de, "Not in the catalog"), "Not in the catalog");
@@ -78,18 +78,18 @@ fn the_language_setting_is_auto_or_an_offered_code() {
 
 #[test]
 fn app_language_reports_and_changes_the_setting() {
-    use_fixture("de", DE);
+    use_fixture("ar", DE);
     let mut app = SlideApp::new(Session::with_new(), Services::default());
     let v = app.run("app.language", json!({})).unwrap();
     assert_eq!((v["language"].as_str(), v["current"].as_str()), (Some(AUTO), Some("en")));
     let codes: Vec<&str> = v["available"].as_array().unwrap().iter().filter_map(|l| l["code"].as_str()).collect();
-    assert_eq!(codes, ["en", "de"]);
-    let v = app.run("app.language", json!({"language": "DE"})).unwrap();
-    assert_eq!((v["language"].as_str(), v["current"].as_str()), (Some("de"), Some("de")));
-    assert_eq!(app.ui.language, "de");
+    assert_eq!(codes, ["en", "ar"]);
+    let v = app.run("app.language", json!({"language": "AR"})).unwrap();
+    assert_eq!((v["language"].as_str(), v["current"].as_str()), (Some("ar"), Some("ar")));
+    assert_eq!(app.ui.language, "ar");
     for bad in [json!({"language": "xx"}), json!({"language": 7}), json!({"language": null})] {
         assert!(app.run("app.language", bad.clone()).is_err(), "{bad}");
-        assert_eq!(app.ui.language, "de", "a refused value keeps the setting");
+        assert_eq!(app.ui.language, "ar", "a refused value keeps the setting");
     }
     app.run("app.language", json!({"language": "auto"})).unwrap();
     assert_eq!(app.ui.language, AUTO);
@@ -99,13 +99,13 @@ fn app_language_reports_and_changes_the_setting() {
 /// the tab ids the control channel and `view.tab` use stay English.
 #[test]
 fn switching_to_german_translates_the_interface_and_back() {
-    use_fixture("de", DE);
+    use_fixture("ar", DE);
     let mut h = harness(SlideApp::new(Session::with_new(), Services::default()));
     h.run_steps(3);
     h.get_by_role_and_label(Role::Button, "Insert");
     h.get_by_value("Slide 1 of 1");
 
-    h.state_mut().run("app.language", json!({"language": "de"})).unwrap();
+    h.state_mut().run("app.language", json!({"language": "ar"})).unwrap();
     h.run_steps(3);
     assert!(h.query_by_role_and_label(Role::Button, "Insert").is_none(), "the English tab name is gone");
     h.get_by_role_and_label(Role::Button, "Einfügen").click();
@@ -130,11 +130,11 @@ fn switching_to_german_translates_the_interface_and_back() {
 /// Cancel in Preferences puts the language back, like the other settings there.
 #[test]
 fn preferences_cancel_restores_the_language() {
-    use_fixture("de", DE);
+    use_fixture("ar", DE);
     let mut h = harness(SlideApp::new(Session::with_new(), Services::default()));
     h.state_mut().run("app.preferences", json!({})).unwrap();
     h.run_steps(3);
-    h.state_mut().run("app.language", json!({"language": "de"})).unwrap();
+    h.state_mut().run("app.language", json!({"language": "ar"})).unwrap();
     h.run_steps(2);
     h.get_by_role_and_label(Role::Button, "Cancel").click();
     h.run_steps(3);

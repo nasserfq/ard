@@ -14,13 +14,24 @@ macro_rules! tl {
     };
 }
 
-/// DeckCraft as craft-update knows it, with its 128 px icon and accent colour: the update
-/// prompt shows both, and an AppImage's menu entry gets the icon.
+/// عرض as its updater knows it: releases `v1.<n>.0` of nasserfq/ard with `ard-<version>-<os>-<arch>`
+/// downloads; the binary is `ard` (`Ard.exe`) and the Mac bundle `عرض.app` (ai.storyteller.ard).
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.deckcraft.png")),
-    accent: Some([0xf0, 0x7a, 0x1e]),
-    ..craft_update::suite::DECKCRAFT
+    accent: Some([0xe1, 0x73, 0x36]),
+    developer: "ناصر القحطاني",
+    ..craft_update::app::App::new("ard", APP_NAME, "Arabic presentations", "nasserfq/ard")
+};
+
+/// The app's name as its windows show it.
+pub const APP_NAME: &str = "عرض";
+
+/// This build's version: `1.<n>.0` for release n (the release workflow sets ARD_VERSION), else the
+/// package version (local builds, which don't update themselves).
+pub const APP_VERSION: &str = match option_env!("ARD_VERSION") {
+    Some(v) => v,
+    None => env!("CARGO_PKG_VERSION"),
 };
 
 pub mod backstage;
@@ -34,6 +45,7 @@ pub mod i18n;
 pub mod icons;
 pub mod media;
 pub mod menus;
+pub mod mirror;
 pub mod opening;
 pub mod presenter;
 pub mod ribbon;
@@ -167,7 +179,7 @@ pub const UI_COMMANDS: &[(&str, &str, Option<&str>, &str)] = &[
     ("app.qat", "Quick Access Toolbar", None, "{add: command id, params?, label?, icon?} | {remove: id, params?} | {reset: true} → [buttons]"),
     ("app.find", "Find…", Some("Cmd+F"), "{}"),
     ("app.replace", "Replace…", Some("Cmd+H"), "{}"),
-    ("app.links", "Community Links", None, "{}"),
+    ("app.links", "Project Links", None, "{}"),
 ];
 
 pub struct Perf {

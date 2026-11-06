@@ -152,6 +152,8 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let avail = ui.available_rect_before_wrap();
     app.canvas_rect = Some(avail);
+    // The slide lays out its own text direction: moved as a block, never mirrored.
+    crate::mirror::keep(ui.ctx(), avail);
     let Some(st) = app.session.active() else { return };
     // The leftover fraction of a wheel line belongs to one presentation. Drop it whenever another
     // one is drawn here, hovered or not, so switching away and back starts from zero.

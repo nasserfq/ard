@@ -201,7 +201,12 @@ pub fn font_definitions(extra: &[std::sync::Arc<deckcraft_fonts::FontFace>]) -> 
             continue;
         }
         let name = format!("craft-{i}-{}-{}", f.family, f.style);
-        defs.font_data.insert(name.clone(), std::sync::Arc::new(FontData::from_static(f.bytes)));
+        let mut data = FontData::from_static(f.bytes);
+        if f.family == "Noto Sans Arabic" {
+            // عرض's interface is Arabic: drawn at Inter's size, Noto Sans Arabic reads small beside it.
+            data.tweak.scale = 1.15;
+        }
+        defs.font_data.insert(name.clone(), std::sync::Arc::new(data));
         names.push((f.family, f.style, name));
     }
     let regular: Vec<String> = names.iter().filter(|(fam, st, _)| !(*fam == "Inter" && *st != "Regular")).map(|(_, _, n)| n.clone()).collect();

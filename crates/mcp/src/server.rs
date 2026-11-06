@@ -147,10 +147,8 @@ impl Server {
                     "capabilities": {"tools": {}, "resources": {}},
                     "serverInfo": {"name": "deckcraft", "title": "DeckCraft", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": deckcraft_engine::links::APP_PAGE},
                     "instructions": format!(
-                        "{INSTRUCTIONS} Backend: {}. Community: {} (Discord), {} (app page), {} (source). The `app.links` command returns these links.",
+                        "{INSTRUCTIONS} Backend: {}. Source: {}. The `app.links` command returns the project links.",
                         self.backend.describe(),
-                        deckcraft_engine::links::DISCORD,
-                        deckcraft_engine::links::APP_PAGE,
                         deckcraft_engine::links::GITHUB
                     ),
                 }))

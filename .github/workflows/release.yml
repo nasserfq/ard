@@ -1,56 +1,120 @@
 name: Release
 
+# A push to `release` builds عرض for macOS, Windows and Linux and publishes the downloads as a
+# GitHub release, which installed copies offer as an update (update and restart).
 on:
   push:
     branches: [release]
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version override for a test run, e.g. 0.2.0-rc.1 (empty: Cargo.toml)"
-        type: string
-        default: ""
 
 permissions:
-  contents: write
-  packages: write
-
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  # Regenerates contributors/contributors.json for the release commit; every build bundles it.
-  credits:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            name: macos
+          - os: windows-latest
+            name: windows-x64
+          - os: ubuntu-22.04
+            name: linux-x64
+    runs-on: ${{ matrix.os }}
+    env:
+      # Release n is version 1.<n>.0: the app's own version, the tag and the download names, which
+      # the in-app updater (crates/craft-update) matches and checks.
+      ARD_VERSION: 1.${{ github.run_number }}.0
+      DECKCRAFT_VERSION: 1.${{ github.run_number }}.0
+      # The interface's Arabic catalog lives in this repository (i18n/), so no craft-i18n checkout.
+      CRAFT_FONTS_REQUIRED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fonts (craft-fonts, with Noto Sans Arabic)
+        shell: bash
+        run: |
+          git clone --filter=blob:none https://github.com/storytold/craft-fonts "$RUNNER_TEMP/craft-fonts"
+          git -C "$RUNNER_TEMP/craft-fonts" checkout --quiet 37827adc41fd165f9a9234ac40f94dbad353aa69
+          echo "CRAFT_FONTS_DIR=$RUNNER_TEMP/craft-fonts" >> "$GITHUB_ENV"
+          echo "DECKCRAFT_BUILD_DATE=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+          echo "DECKCRAFT_BUILD_SHA=$GITHUB_SHA" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2  # reuse compiled dependencies between releases
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libasound2-dev libxkbcommon-dev \
+            libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgtk-3-dev \
+            libfontconfig1-dev libfreetype-dev
+      - name: macOS signing certificate
+        if: runner.os == 'macOS'
+        # Signed and notarized when these repository secrets exist; otherwise ad-hoc (unsigned).
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          packaging/macos/import-cert.sh  # sets MACOS_SIGN_IDENTITY for the next step
+      - name: macOS app (DMG), build
+        if: runner.os == 'macOS'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          DIST="$PWD/out" packaging/macos/package.sh --arch universal
+          mv out/*.dmg "out/ard-$ARD_VERSION-macos-universal.dmg"
+          rm -f out/*.zip
+      - name: Windows and Linux builds
+        if: runner.os != 'macOS'
+        shell: bash
+        run: |
+          cargo build --release --locked -p deckcraft
+          mkdir -p out/Ard
+          cp LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md out/Ard/
+          for f in "$CRAFT_FONTS_DIR"/fonts/*/OFL.txt; do
+            if [[ -f "$f" ]]; then cp "$f" "out/Ard/OFL-$(basename "$(dirname "$f")").txt"; fi
+          done
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            cp target/release/deckcraft.exe out/Ard/Ard.exe
+            (cd out && 7z a "ard-$ARD_VERSION-windows-x64-portable.zip" Ard >/dev/null)
+          else
+            cp target/release/deckcraft out/Ard/ard
+            tar -C out -czf "out/ard-$ARD_VERSION-linux-x86_64.tar.gz" Ard
+          fi
+          rm -rf out/Ard
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: out/*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-    uses: storytold/craft-common-actions/.github/workflows/refresh-contributors.yml@main
-  release:
-    needs: credits
-    # Intentionally tracked at @main (not SHA-pinned) so org-wide CI improvements, security fixes, and build optimizations propagate without PR churn across all craftapp repos.
-    uses: storytold/craft-common-actions/.github/workflows/release.yml@main
-    with:
-      app-name: deckcraft
-      app-title: DeckCraft
-      # Keep identical to ci.yml and freebsd.yml. The shared release workflow sets
-      # CRAFT_FONTS_REQUIRED=1 in its packaging steps, so a pin without the reviewed Chinese
-      # manifest fails the release instead of silently skipping it.
-      craft-fonts-ref: 37827adc41fd165f9a9234ac40f94dbad353aa69
-      version: ${{ inputs.version }}
-      contributors-artifact: ${{ needs.credits.outputs.artifact-name }}
-    secrets:
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-      AZURE_SIGNING_ACCOUNT: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
-      AZURE_CERT_PROFILE: ${{ secrets.AZURE_CERT_PROFILE }}
-      LINUX_SIGNING_KEY: ${{ secrets.LINUX_SIGNING_KEY }}
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}.0
+          name: عرض ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          files: dist/*
+          body: |
+            عرض: برنامج عروض تقديمية عربي مبني على DeckCraft من فريق ArtCraft.
+
+            - macOS (Apple Silicon and Intel, macOS 11 or later): the `.dmg`. Signed and notarized by Apple.
+            - Windows: the `windows-x64-portable.zip`, unzip and run `Ard.exe`.
+            - Linux: the `linux-x86_64.tar.gz`, extract and run `ard`.
+
+            عرض يحدّث نفسه: عند توفر إصدار جديد تظهر رسالة «تحديث وإعادة تشغيل».

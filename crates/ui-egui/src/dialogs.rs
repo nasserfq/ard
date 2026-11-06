@@ -96,7 +96,7 @@ pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
     } else if d.id == "themeFonts" {
         window = window.default_size(vec2(460.0, 320.0)).min_width(420.0).min_height(300.0);
     }
-    window.show(ctx, |ui| {
+    let shown = window.show(ctx, |ui| {
         ui.set_min_width(match d.id.as_str() {
             "themeColors" => 700.0,
             "themeFonts" => 400.0,
@@ -109,6 +109,9 @@ pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
         }
         close = body(app, ui, &mut d);
     });
+    if let Some(shown) = &shown {
+        crate::mirror::overlay(ctx, shown.response.layer_id);
+    }
     let escape = ctx.input(|i| i.key_pressed(egui::Key::Escape));
     if open && !close && !escape {
         app.dialog = Some(d);

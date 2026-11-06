@@ -292,6 +292,12 @@ impl SlideApp {
         }
         // The language every label this pass draws is looked up in (Preferences › Language).
         crate::i18n::set_current(crate::i18n::Lang::from_pref(&self.ui.language));
+        // An Arabic interface writes new blank presentations right to left, in Arabic.
+        let arabic = crate::i18n::current().code() == crate::i18n::MAIN_LANGUAGE;
+        if arabic != self.session.new_rtl_lang.is_some() {
+            self.session.new_rtl_lang = arabic.then(|| "ar-SA".to_string());
+            deckcraft_model::set_arabic_prompts(arabic);
+        }
         let t0 = now_ms();
         let t = theme::Tokens::get(&ctx);
         self.note_ui_text(&ctx);

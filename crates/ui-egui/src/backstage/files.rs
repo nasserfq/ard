@@ -251,8 +251,6 @@ pub(super) fn home(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mu
             }
         });
     }
-    ui.add_space(30.0);
-    ui.hyperlink_to(tl!("Join the ArtCraft community on Discord"), deckcraft_engine::links::DISCORD);
 }
 
 /// New: a blank presentation, then every theme and starter template, with a search box.

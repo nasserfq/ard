@@ -24,5 +24,7 @@ pub fn selected_language(app: &SlideApp) -> (String, bool) {
         _ => st.selection.shapes.first().and_then(|id| st.shape(*id)).and_then(|sh| run(sh, None)),
     };
     let props = props.unwrap_or_default();
-    (props.lang.unwrap_or_else(|| "en-US".into()), props.no_proof == Some(true))
+    // Text without a language of its own is in the presentation's (Arabic for عرض's new ones).
+    let fallback = || st.doc.default_text_style.level(0).and_then(|l| l.run.lang.clone()).unwrap_or_else(|| "en-US".into());
+    (props.lang.unwrap_or_else(fallback), props.no_proof == Some(true))
 }

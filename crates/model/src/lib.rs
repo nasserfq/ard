@@ -94,6 +94,14 @@ pub enum PhType {
     SlideImage,
 }
 
+/// Empty placeholders prompt in Arabic (عرض's Arabic interface turns it on).
+static ARABIC_PROMPTS: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Show empty placeholders' prompts in Arabic (`true`) or English.
+pub fn set_arabic_prompts(on: bool) {
+    ARABIC_PROMPTS.store(on, std::sync::atomic::Ordering::Relaxed);
+}
+
 impl PhType {
     pub fn xml(self) -> &'static str {
         match self {
@@ -138,8 +146,26 @@ impl PhType {
     pub fn is_title(self) -> bool {
         matches!(self, PhType::Title | PhType::CtrTitle)
     }
-    /// The prompt shown in an empty placeholder in Normal view.
+    /// The prompt shown in an empty placeholder in Normal view (in Arabic while
+    /// [`set_arabic_prompts`] is on).
     pub fn prompt(self) -> &'static str {
+        if ARABIC_PROMPTS.load(std::sync::atomic::Ordering::Relaxed) {
+            return match self {
+                PhType::Title | PhType::CtrTitle => "انقر لإضافة عنوان",
+                PhType::SubTitle => "انقر لإضافة عنوان فرعي",
+                PhType::Body | PhType::Obj => "انقر لإضافة نص",
+                PhType::Chart => "انقر الأيقونة لإضافة مخطط",
+                PhType::Table => "انقر الأيقونة لإضافة جدول",
+                PhType::Diagram => "انقر الأيقونة لإضافة رسم SmartArt",
+                PhType::Media => "انقر الأيقونة لإضافة وسائط",
+                PhType::Picture | PhType::ClipArt => "انقر الأيقونة لإضافة صورة",
+                PhType::Date => "التاريخ",
+                PhType::Footer => "التذييل",
+                PhType::SlideNum => "‹#›",
+                PhType::Header => "الرأس",
+                PhType::SlideImage => "",
+            };
+        }
         match self {
             PhType::Title | PhType::CtrTitle => "Click to add title",
             PhType::SubTitle => "Click to add subtitle",

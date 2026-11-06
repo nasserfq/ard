@@ -558,3 +558,42 @@ pub fn new_slide(p: &mut Presentation, layout: LayoutId) -> Option<Slide> {
 pub fn layout_of_kind(p: &Presentation, kind: LayoutType) -> Option<LayoutId> {
     p.masters.first().and_then(|m| m.layouts.iter().find(|l| l.kind == kind)).map(|l| l.id)
 }
+
+/// New presentations written in a right-to-left language (عرض's Arabic interface): every text
+/// style of the masters and layouts reads right to left, left-aligned text becomes right-aligned
+/// (and right-aligned left, as the footers' slide number), and text is in `lang`.
+pub fn write_right_to_left(p: &mut Presentation, lang: &str) {
+    fn flip(ls: &mut ListStyle, lang: Option<&str>) {
+        for level in ls.levels.iter_mut().flatten() {
+            level.para.rtl = Some(true);
+            level.para.align = match level.para.align {
+                Some(crate::text::Align::Left) => Some(crate::text::Align::Right),
+                Some(crate::text::Align::Right) => Some(crate::text::Align::Left),
+                a => a,
+            };
+            if let Some(lang) = lang
+                && level.run.lang.is_none()
+            {
+                level.run.lang = Some(lang.to_string());
+            }
+        }
+    }
+    fn shapes(list: &mut [Shape]) {
+        for s in list {
+            if let Some(t) = s.text.as_mut() {
+                flip(&mut t.list_style, None);
+            }
+        }
+    }
+    flip(&mut p.default_text_style, Some(lang));
+    for m in &mut p.masters {
+        let m = std::sync::Arc::make_mut(m);
+        for ls in [&mut m.title_style, &mut m.body_style, &mut m.other_style] {
+            flip(ls, Some(lang));
+        }
+        shapes(&mut m.shapes);
+        for l in &mut m.layouts {
+            shapes(&mut l.shapes);
+        }
+    }
+}

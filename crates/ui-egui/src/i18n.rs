@@ -57,10 +57,13 @@ pub const AUTO: &str = "auto";
 /// and the craft-i18n locale), when their catalogs are embedded. English first: it is the source
 /// language and the fallback.
 pub static LANGUAGES: [&str; 2] = [
-    "en", // German, neutral across Germany, Austria and Switzerland; `de-DE`, `de-AT`, `de_CH.UTF-8` …
-    // resolve here.
-    "de",
+    "en", // Arabic, عرض's main language; `ar`, `ar-SA`, `ar-EG` and other regions resolve here.
+    "ar",
 ];
+
+/// عرض's main language: whenever its catalog is embedded the interface is Arabic, unless English
+/// is picked in Preferences (the only other choice). Tests keep driving the UI in English.
+pub const MAIN_LANGUAGE: &str = "ar";
 
 /// A language the UI can be shown in: English, or an offered language whose catalogs are embedded.
 #[derive(Clone, Copy)]
@@ -113,6 +116,13 @@ impl Lang {
     /// Resolve the `language` setting: a language code, or [`AUTO`] (and anything unknown, e.g. a
     /// code from a newer version) to follow the system.
     pub fn from_pref(pref: &str) -> Lang {
+        // Anything but an explicit English choice is Arabic in عرض.
+        if !cfg!(test)
+            && !pref.trim().eq_ignore_ascii_case("en")
+            && let Some(ar) = Lang::from_code(MAIN_LANGUAGE)
+        {
+            return ar;
+        }
         Lang::from_code(pref).unwrap_or_else(system_lang)
     }
 
@@ -155,6 +165,10 @@ pub fn system_lang() -> Lang {
 }
 
 fn detect_system_lang() -> Lang {
+    // عرض starts in Arabic whatever the system language is.
+    if let Some(ar) = Lang::from_code(MAIN_LANGUAGE) {
+        return ar;
+    }
     // An explicit override, then the platform's preferred UI languages.
     if let Some(l) = std::env::var("DECKCRAFT_LANGUAGE").ok().and_then(|v| lang_from_tag(&v)) {
         return l;

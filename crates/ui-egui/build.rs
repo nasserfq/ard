@@ -44,9 +44,15 @@ fn craft_i18n() -> String {
     println!("cargo::rerun-if-env-changed=CRAFT_I18N_DIR");
     println!("cargo::rerun-if-env-changed=CRAFT_I18N_REQUIRED");
     let required = std::env::var("CRAFT_I18N_REQUIRED").is_ok_and(|v| v.trim() == "1");
-    let entries = match std::env::var_os("CRAFT_I18N_DIR").filter(|d| !d.is_empty()) {
+    // عرض keeps its Arabic catalog in the repository (`i18n/`), used when CRAFT_I18N_DIR is unset.
+    let own = std::env::var_os("CARGO_MANIFEST_DIR").map(|d| std::path::PathBuf::from(d).join("../../i18n")).filter(|d| d.join("locales").is_dir());
+    if own.is_some() {
+        println!("cargo::rerun-if-changed=../../i18n");
+    }
+    let dir = std::env::var_os("CRAFT_I18N_DIR").filter(|d| !d.is_empty()).map(std::path::PathBuf::from).or(own);
+    let entries = match dir {
         // Not canonicalized: on Windows that gives `\\?\C:\…`, which `include_str!` can't read.
-        Some(dir) => match locales(&std::path::PathBuf::from(dir).join("locales")) {
+        Some(dir) => match locales(&dir.join("locales")) {
             Ok(entries) => entries,
             Err(e) => {
                 let level = if required { "error" } else { "warning" };
