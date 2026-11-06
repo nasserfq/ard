@@ -528,6 +528,9 @@ impl Default for Session {
     }
 }
 
+/// The language new presentations are written in (right to left) unless the app is in English.
+pub const ARABIC_LANG: &str = "ar-SA";
+
 impl Session {
     /// Install the process panic hook and construct an empty session with default preferences,
     /// clipboard, tool state, and no active document.
@@ -573,6 +576,13 @@ impl Session {
     pub(crate) fn take_loaded(&mut self, token: u64) -> Option<cmd::file::LoadedFile> {
         let i = self.loaded.iter().position(|(t, _)| *t == token)?;
         Some(self.loaded.remove(i).1)
+    }
+    /// A session whose new presentations are Arabic and right to left: عرض's CLI and MCP server
+    /// (the app follows its interface language instead).
+    pub fn arabic() -> Self {
+        let mut s = Self::new();
+        s.new_rtl_lang = Some(ARABIC_LANG.to_string());
+        s
     }
     /// A session with one new presentation open.
     pub fn with_new() -> Self {

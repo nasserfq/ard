@@ -200,7 +200,7 @@ fn bench(args: &[String]) -> Result<(), String> {
     if input.is_none() && !sample {
         return Err("bench needs a FILE or --sample".into());
     }
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     let (name, bytes) = match &input {
         Some(p) => (p.clone(), std::fs::read(p).map_err(|e| format!("{p}: {e}"))?),
         None => {
@@ -269,7 +269,7 @@ fn info(args: &[String]) -> Result<(), String> {
         return Ok(());
     }
     let path = args.first().ok_or("info needs a FILE")?;
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     open(&mut s, Some(path), false)?;
     let v = s.execute("document.inspect", &json!({})).map_err(|e| e.to_string())?;
     outln!("{}", serde_json::to_string_pretty(&v).unwrap_or_default());
@@ -313,7 +313,7 @@ fn render(args: &[String]) -> Result<(), String> {
         }
     }
     let out = out.ok_or("render needs an output path")?;
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     open(&mut s, input.as_deref(), sample)?;
     let st = s.doc().map_err(|e| e.to_string())?;
     let n = st.doc.slides.len();
@@ -393,7 +393,7 @@ fn render_transition(args: &[String]) -> Result<(), String> {
         return Err("render-transition needs --t".into());
     }
     let paths = frame_paths(&out, &ts)?;
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     open(&mut s, Some(&input), false)?;
     let st = s.doc().map_err(|e| e.to_string())?;
     let doc = &st.doc;
@@ -449,7 +449,7 @@ fn convert(args: &[String]) -> Result<(), String> {
     }
     let (Some(input), Some(out)) = (args.first(), args.get(1)) else { return Err("convert needs IN and OUT".into()) };
     let fmt = output_format(out)?;
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     open(&mut s, Some(input), false)?;
     let r = if matches!(fmt, "png" | "jpeg") {
         s.execute("file.export", &json!({"path": out, "slide": 0}))
@@ -571,7 +571,7 @@ fn run(args: &[String]) -> Result<(), String> {
     for p in save.iter().chain(&export) {
         output_format(p)?;
     }
-    let mut s = Session::new();
+    let mut s = Session::arabic();
     open(&mut s, input.as_deref(), sample)?;
     for source in cmds {
         match source {

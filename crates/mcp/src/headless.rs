@@ -63,12 +63,14 @@ pub fn tool_kind(name: &str, preset: Option<&str>) -> Option<ToolKind> {
 
 impl Headless {
     pub fn new() -> Self {
-        Self { session: Session::new(), roots: None }
+        Self { session: Session::arabic(), roots: None }
     }
 
     /// A session with a fresh presentation.
     pub fn with_document() -> Self {
-        Self { session: Session::with_new(), roots: None }
+        let mut session = Session::arabic();
+        let _ = session.execute("file.new", &serde_json::Value::Null);
+        Self { session, roots: None }
     }
 
     /// Confine every file the session's commands read and write to `roots`

@@ -304,3 +304,18 @@ fn export_tool_lists_gif_and_its_options() {
     assert_eq!(r["result"]["isError"], true, "{r}");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// عرض: presentations an AI app makes through MCP read right to left in Arabic, as in the app.
+#[test]
+fn new_presentations_through_mcp_are_arabic_and_right_to_left() {
+    for mut h in [Headless::new(), Headless::with_document()] {
+        if h.session.active().is_none() {
+            h.session.execute("file.new", &json!({})).unwrap();
+        }
+        let doc = &h.session.active().unwrap().doc;
+        let body = doc.masters[0].body_style.level(0).unwrap();
+        assert_eq!(body.para.rtl, Some(true));
+        assert_eq!(body.para.align, Some(deckcraft_engine::model::text::Align::Right));
+        assert_eq!(body.run.lang.as_deref(), Some("ar-SA"));
+    }
+}
