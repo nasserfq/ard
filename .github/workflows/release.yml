@@ -73,7 +73,7 @@ jobs:
         if: runner.os != 'macOS'
         shell: bash
         run: |
-          cargo build --release --locked -p deckcraft
+          cargo build --release --locked -p deckcraft -p deckcraft-cli
           mkdir -p out/Ard
           cp LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md out/Ard/
           for f in "$CRAFT_FONTS_DIR"/fonts/*/OFL.txt; do
@@ -81,9 +81,11 @@ jobs:
           done
           if [[ "$RUNNER_OS" == Windows ]]; then
             cp target/release/deckcraft.exe out/Ard/Ard.exe
+            cp target/release/deckcraft-cli.exe out/Ard/ard-cli.exe
             (cd out && 7z a "ard-$ARD_VERSION-windows-x64-portable.zip" Ard >/dev/null)
           else
             cp target/release/deckcraft out/Ard/ard
+            cp target/release/deckcraft-cli out/Ard/ard-cli
             tar -C out -czf "out/ard-$ARD_VERSION-linux-x86_64.tar.gz" Ard
           fi
           rm -rf out/Ard
