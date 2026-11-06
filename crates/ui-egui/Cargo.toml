@@ -30,6 +30,8 @@ web-time = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 craft-update = { workspace = true }
+# File › About › Connect to AI Apps writes the AI apps' MCP settings (no UI code; crates/ai-connect).
+ai-connect = { path = "../ai-connect" }
 
 [dev-dependencies]
 skrifa = { workspace = true }

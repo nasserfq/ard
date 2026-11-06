@@ -74,6 +74,8 @@ jobs:
         run: |
           DIST="$PWD/out" packaging/macos/package.sh --arch universal
           mv out/*.dmg "out/ard-$ARD_VERSION-macos-universal.dmg"
+          # Claude desktop extension: double-click to connect Claude to the installed app.
+          packaging/mcpb/make-mcpb.sh out "$ARD_VERSION"
           rm -f out/*.zip
       - name: Windows and Linux builds
         if: runner.os != 'macOS'
@@ -127,4 +129,4 @@ jobs:
 
             عرض يحدّث نفسه: عند توفر إصدار جديد تظهر رسالة «تحديث وإعادة تشغيل».
 
-            جاهز للذكاء الاصطناعي: يأتي مع خادم MCP (`ard-cli mcp`) ليتحكم Claude وغيره من تطبيقات الذكاء الاصطناعي بعرض. طريقة الإعداد في ملف README.
+            جاهز للذكاء الاصطناعي: يأتي مع خادم MCP (`ard-cli mcp`) ليتحكم Claude وغيره من تطبيقات الذكاء الاصطناعي بعرض. للربط افتح «ملف» ← «حول» ← «ربط مع الذكاء الاصطناعي» داخل عرض، أو افتح ملف `ard-claude-extension-macos.mcpb` على Mac ليضيفه Claude بنقرة.

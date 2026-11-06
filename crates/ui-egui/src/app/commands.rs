@@ -240,6 +240,20 @@ impl SlideApp {
                 #[cfg(target_arch = "wasm32")]
                 return Err("updates are handled by the browser: reload the page".into());
             }
+            // File › About › Connect to AI Apps; with `client` (claude, claudeCode, codex, cursor,
+            // vscode, windsurf, gemini, lmstudio) it connects that app without the window, and with
+            // `"disconnect": true` takes the connection out again.
+            "app.connectAi" => {
+                #[cfg(not(target_arch = "wasm32"))]
+                match p.get("client").and_then(Value::as_str) {
+                    None => crate::ai_connect_ui::open(self),
+                    Some(client) => {
+                        return crate::ai_connect_ui::run(client, p.get("disconnect").and_then(Value::as_bool).unwrap_or(false));
+                    }
+                }
+                #[cfg(target_arch = "wasm32")]
+                return Err("connecting AI apps needs the desktop app".into());
+            }
             "app.palette" => self.palette = Some((String::new(), 0)),
             "app.preferences" => self.dialog = Some(dialogs::Dialog::new("preferences")),
             "app.language" => {

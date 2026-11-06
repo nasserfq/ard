@@ -222,6 +222,10 @@ pub(super) fn about(app: &mut SlideApp, ui: &mut Ui) {
             if task(ui, Icon::Help, "Credits", "Credits", "The people and models who built DeckCraft.", true) {
                 let _ = app.run("app.about", json!({}));
             }
+            if task(ui, Icon::Help, "Connect", "Connect to AI Apps", "Let Claude and other AI apps build your presentations in Ard (MCP).", true) {
+                app.close_backstage();
+                let _ = app.run("app.connectAi", json!({}));
+            }
             ui.hyperlink_to("github.com/nasserfq/ard", deckcraft_engine::links::GITHUB);
         });
         ui.add_space(40.0);
