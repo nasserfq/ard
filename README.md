@@ -37,11 +37,66 @@
 
 التحديث تلقائي: عند صدور إصدار جديد يعرض عرض «تحديث وإعادة تشغيل»، وتبقى إعداداتك وعروضك كما هي.
 
+## التحكم بعرض من الذكاء الاصطناعي (MCP)
+
+عرض جاهز للذكاء الاصطناعي: يأتي مع خادم [MCP](https://modelcontextprotocol.io)، وهو معيار مفتوح تستخدمه تطبيقات الذكاء الاصطناعي لتشغيل البرامج. بعد ربطه تطلب بكلامك، مثلًا «اعمل عرضًا من خمس شرائح عن مشروعنا، بعنوان في كل شريحة ونقاط مختصرة، واحفظه PowerPoint»، فينفّذه الذكاء الاصطناعي في عرض خطوة بخطوة: إضافة الشرائح والنصوص والأشكال والصور والتنسيق وقراءة العرض والحفظ بصيغة PowerPoint أو PDF.
+
+يعمل مع أي تطبيق يدعم MCP، مثل Claude ‏(التطبيق وClaude Code)، وCodex من OpenAI، وCursor، وVS Code مع Copilot، وGemini CLI، وLM Studio ‏(نماذج تعمل على جهازك دون إنترنت). الخادم مجاني ويعمل على جهازك، أما الذكاء الاصطناعي فمن التطبيق الذي تختاره وبحسب اشتراكك فيه.
+
+**1. مكان الخادم:** يُثبَّت مع عرض ويُحدَّث معه.
+
+| النظام | المسار |
+|---|---|
+| macOS | `/Applications/عرض.app/Contents/MacOS/ard-cli` |
+| Windows | `ard-cli.exe` في مجلد عرض، بجانب `Ard.exe` |
+| Linux | `ard-cli` في مجلد عرض، بجانب `ard` |
+
+**2. أضفه إلى تطبيق الذكاء الاصطناعي:**
+
+- **تطبيق Claude:** الإعدادات ← «Developer» ← «Edit Config»، ثم أضف ما يلي إلى الملف `claude_desktop_config.json` وأعد تشغيل Claude:
+
+<div dir="ltr">
+
+```json
+{
+  "mcpServers": {
+    "ard": {
+      "command": "/Applications/عرض.app/Contents/MacOS/ard-cli",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+</div>
+
+- في Windows ضع مسار `ard-cli.exe` بدل المسار السابق، مع مضاعفة الشرطة المائلة، مثل `"C:\\Users\\اسمك\\Ard\\ard-cli.exe"`.
+- **Cursor وGemini CLI وLM Studio** وأغلب التطبيقات الأخرى: الإعداد نفسه (`mcpServers`) في ملف MCP الخاص بكل تطبيق (`~/.cursor/mcp.json`، ‏`~/.gemini/settings.json`، ‏`mcp.json` في LM Studio).
+- **Claude Code:** <code dir="ltr">claude mcp add ard -- "/Applications/عرض.app/Contents/MacOS/ard-cli" mcp</code>
+- **Codex:** <code dir="ltr">codex mcp add ard -- "/Applications/عرض.app/Contents/MacOS/ard-cli" mcp</code>
+
+بهذا يعمل الذكاء الاصطناعي على الملفات في الخلفية دون نافذة، ثم يحفظها حيث تطلب.
+
+**التحكم بنافذة عرض المفتوحة (اختياري):** لتشاهد الذكاء الاصطناعي يعمل في النافذة نفسها، شغّل عرض مع منفذ تحكم، واجعل `args` هي <code dir="ltr">["mcp", "--connect", "7979"]</code>:
+
+<div dir="ltr">
+
+```sh
+"/Applications/عرض.app/Contents/MacOS/DeckCraft" --control 7979   # macOS
+Ard.exe --control 7979                                   # Windows
+./ard --control 7979                                     # Linux
+```
+
+</div>
+
+منفذ التحكم محلي فقط (127.0.0.1)، فلا يصل إليه أحد من الشبكة. أغلق عرض أو شغّله دون `--control` حين لا تحتاجه.
+
 ## ما أضافه ناصر القحطاني إلى DeckCraft
 
 - الواجهة العربية افتراضيًا، مع ترجمة عربية للواجهة.
 - الاتجاه من اليمين إلى اليسار في الواجهة كلها، وفي الشرائح الجديدة.
 - خط Noto Sans Arabic بحجم مريح للقراءة.
+- خادم MCP ضمن التنزيلات لتتحكم تطبيقات الذكاء الاصطناعي بعرض.
 - الاسم والشعار، وتطبيق Mac موقّع وموثَّق لأجهزة Apple Silicon وIntel، وتنزيلات Windows وLinux، والتحديث التلقائي بالعربية.
 
 ## شكر
@@ -65,6 +120,15 @@ in-app updates.
 
 It is based on [DeckCraft](https://github.com/storytold/deckcraft) by the ArtCraft team. Ard is an
 independent project, not made, sponsored or endorsed by the ArtCraft team.
+
+## Use it from AI apps (MCP)
+
+Ard ships an [MCP](https://modelcontextprotocol.io) server, so Claude and any other MCP app
+(Codex, Cursor, VS Code, Gemini CLI, LM Studio…) can add slides, text, shapes and pictures, format, read and save presentations. It is installed and updated with
+the app: `/Applications/عرض.app/Contents/MacOS/ard-cli` on macOS, `ard-cli.exe` beside `Ard.exe` on Windows, `ard-cli` beside `ard`
+on Linux. Add it to your client as that command with the argument `mcp` (for example
+`claude mcp add ard -- "/Applications/عرض.app/Contents/MacOS/ard-cli" mcp`). To drive the open window instead, start Ard with
+`--control 7979` and use `mcp --connect 7979`.
 
 ## Build from source
 
