@@ -20,7 +20,10 @@ const RESOURCE_NOT_FOUND: i64 = -32002;
 /// Keep request frames in step with the connected backend's reply limit.
 const MAX_FRAME_BYTES: usize = 16 * 1024 * 1024;
 
-const INSTRUCTIONS: &str = "DeckCraft is a presentation app (a PowerPoint clone). Coordinates are points on the \
+const INSTRUCTIONS: &str = "This server is عرض (Ard), the Arabic presentation app installed on this computer, NOT Microsoft \
+PowerPoint. «عرض» is the app's name (it also means \"presentation\" or \"show\" in Arabic): when the user mentions عرض \
+or Ard, or asks to make, design or save a presentation (.pptx) with it, use these tools, never PowerPoint, Keynote or \
+computer use. It is based on DeckCraft, a presentation app (a PowerPoint clone). Coordinates are points on the \
 current slide (y down; the default 16:9 slide is 960×540). Every action is a command: find ids and parameters with \
 list_commands and run them with run_command (or several with batch). Typical flow: new_presentation → add_slide \
 {layout:\"titleAndContent\", title, body} → add_shape / add_text_box / insert_picture / insert_chart → \
