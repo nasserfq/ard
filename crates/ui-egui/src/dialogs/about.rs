@@ -31,7 +31,7 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
         ui.add_space(6.0);
         ui.label(egui::RichText::new("عرض © 2026 ناصر القحطاني.").size(11.0).color(t.text_faint));
         // Kept as is: the MIT and Apache licences require DeckCraft's copyright notice.
-        ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 ArtCraft Team and the DeckCraft contributors").size(11.0).color(t.text_faint));
+        ui.label(egui::RichText::new(tl!("MIT OR Apache-2.0 · © 2026 ArtCraft Team and the DeckCraft contributors")).size(11.0).color(t.text_faint));
     });
 }
 

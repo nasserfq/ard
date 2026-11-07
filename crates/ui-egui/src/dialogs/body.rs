@@ -101,25 +101,26 @@ fn dlg_slide_size(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     }
     let label = ui.label(tl!("Slides sized for:"));
     let preset = d.get("preset", "");
-    let combo = craft_ui::ComboBox::from_id_salt("sizes").selected_text(if preset.is_empty() { "Custom" } else { &preset }).show_ui(ui, |ui| {
-        for (label, w, h) in deckcraft_model::defaults::SLIDE_SIZES {
-            if ui.selectable_label(preset == *label, *label).clicked() {
-                d.fields.insert("preset".into(), label.to_string());
-                put_slide_dim(d, "w", *w, ppu);
-                put_slide_dim(d, "h", *h, ppu);
+    let combo =
+        craft_ui::ComboBox::from_id_salt("sizes").selected_text(if preset.is_empty() { tl!("Custom") } else { tl!(&preset) }).show_ui(ui, |ui| {
+            for (label, w, h) in deckcraft_model::defaults::SLIDE_SIZES {
+                if ui.selectable_label(preset == *label, tl!(label)).clicked() {
+                    d.fields.insert("preset".into(), label.to_string());
+                    put_slide_dim(d, "w", *w, ppu);
+                    put_slide_dim(d, "h", *h, ppu);
+                }
             }
-        }
-    });
+        });
     let _ = combo.response.labelled_by(label.id);
     let abbr = unit_abbr(len);
     let (w_seed, h_seed) = (field_of(d, "w"), field_of(d, "h"));
-    field(ui, d, &format!("Width ({abbr}):"), "w", &w_seed);
-    field(ui, d, &format!("Height ({abbr}):"), "h", &h_seed);
+    field(ui, d, &format!("{} ({}):", tl!("Width"), tl!(abbr)), "w", &w_seed);
+    field(ui, d, &format!("{} ({}):", tl!("Height"), tl!(abbr)), "h", &h_seed);
     let (w, h) = (slide_dim_points(d, "w", ppu, cur.width), slide_dim_points(d, "h", ppu, cur.height));
     ui.horizontal(|ui| {
         ui.label(tl!("Orientation:"));
-        let portrait = ui.radio(h > w, "Portrait").clicked();
-        let landscape = ui.radio(w >= h, "Landscape").clicked();
+        let portrait = ui.radio(h > w, tl!("Portrait")).clicked();
+        let landscape = ui.radio(w >= h, tl!("Landscape")).clicked();
         // Picking the other orientation swaps the width and height fields.
         if portrait && w > h || landscape && h > w {
             put_slide_dim(d, "w", h, ppu);
@@ -374,7 +375,7 @@ fn dlg_bullets(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     let tab = d.get("tab", if numbered { "numbered" } else { "bulleted" });
     ui.horizontal(|ui| {
         for (k, l) in [("bulleted", "Bulleted"), ("numbered", "Numbered")] {
-            if ui.selectable_label(tab == k, l).clicked() {
+            if ui.selectable_label(tab == k, tl!(l)).clicked() {
                 d.fields.insert("tab".into(), k.into());
             }
         }
@@ -1274,7 +1275,7 @@ fn dlg_about(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     let tab = d.get("tab", "about");
     ui.horizontal(|ui| {
         for (k, l) in [("about", "About"), ("contributors", "Contributors"), ("models", "Models")] {
-            if ui.selectable_label(tab == k, l).clicked() {
+            if ui.selectable_label(tab == k, tl!(l)).clicked() {
                 d.fields.insert("tab".into(), k.into());
             }
         }
