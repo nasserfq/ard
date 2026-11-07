@@ -15,6 +15,8 @@
 #![forbid(unsafe_code)]
 
 #[cfg(target_os = "macos")]
+mod app_menu;
+#[cfg(target_os = "macos")]
 mod apple_events;
 mod audio;
 mod control_server;
@@ -39,7 +41,10 @@ struct App(
 impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         #[cfg(target_os = "macos")]
-        apple_events::poll(&self.1, &mut self.0, ctx);
+        {
+            apple_events::poll(&self.1, &mut self.0, ctx);
+            app_menu::sync(deckcraft_ui_egui::i18n::current().code() == "ar", deckcraft_ui_egui::APP_NAME);
+        }
         self.0.logic(ctx);
     }
     /// Forward native raw input to the wrapped application once per pass.
