@@ -603,8 +603,9 @@ pub fn system_font_dirs() -> Vec<std::path::PathBuf> {
         dirs.extend(["/System/Library/Fonts", "/Library/Fonts"].map(Into::into));
         if let Some(h) = &home {
             dirs.push(h.join("Library/Fonts"));
-            // Fonts Microsoft Office downloads on demand (Aptos…), used where Office put them.
-            dirs.push(h.join("Library/Group Containers/UBF8T346G9.Office/FontCache/4/CloudFonts"));
+            // Never another app's Group Container (Office keeps its cloud fonts in one): since
+            // macOS 15, reading it asks "would like to access data from other apps", and the
+            // scan, and every command waiting on the font list, blocks until that is answered.
         }
         // Fonts Office installs inside its apps.
         for app in ["Microsoft PowerPoint", "Microsoft Word", "Microsoft Excel"] {
@@ -1634,6 +1635,15 @@ impl OutlinePen for FlipPen {
 #[cfg(test)]
 mod font_dir_tests {
     use std::path::{Path, PathBuf};
+
+    /// The scan never enters another app's Group Container: on macOS that raises a privacy
+    /// prompt and hangs every command waiting on the font list until someone answers it.
+    #[test]
+    fn the_scan_never_reads_another_apps_group_container() {
+        for dir in super::system_font_dirs() {
+            assert!(!dir.to_string_lossy().contains("Group Containers"), "{}", dir.display());
+        }
+    }
 
     use super::*;
 
