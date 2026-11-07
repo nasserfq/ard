@@ -53,7 +53,7 @@ pub(super) fn animations(app: &mut SlideApp, ui: &mut Ui) {
                     paint_anim_tile(p, r, a.1, a.2, has_sel);
                 }
             },
-            |i| quick.get(i).map(|a| a.1.to_string()).unwrap_or_default(),
+            |i| quick.get(i).map(|a| tl!(a.1).to_string()).unwrap_or_default(),
         ) && let Some(a) = quick.get(i)
         {
             run(app, "animation.set", json!({"effect": a.0, "class": a.2.xml()}));
@@ -63,7 +63,7 @@ pub(super) fn animations(app: &mut SlideApp, ui: &mut Ui) {
             for (cls, label) in
                 [(AnimClass::Entrance, "Entrance"), (AnimClass::Emphasis, "Emphasis"), (AnimClass::Exit, "Exit"), (AnimClass::Path, "Motion Paths")]
             {
-                ui.label(egui::RichText::new(label).font(theme::bold(12.0)));
+                ui.label(egui::RichText::new(tl!(label)).font(theme::bold(12.0)));
                 ui.horizontal_wrapped(|ui| {
                     for a in deckcraft_model::anim::ANIMATIONS.iter().filter(|a| a.2 == cls) {
                         let (r, resp) = ui.allocate_exact_size(vec2(56.0, 54.0), Sense::click());
@@ -112,13 +112,13 @@ pub(super) fn animations(app: &mut SlideApp, ui: &mut Ui) {
                     if ui
                         .button(format!(
                             "{} — {}",
-                            a.1,
-                            match a.2 {
+                            tl!(a.1),
+                            tl!(match a.2 {
                                 AnimClass::Entrance => "Entrance",
                                 AnimClass::Emphasis => "Emphasis",
                                 AnimClass::Exit => "Exit",
                                 _ => "Motion",
-                            }
+                            })
                         ))
                         .clicked()
                     {
@@ -202,7 +202,7 @@ pub fn paint_anim_tile(p: &egui::Painter, r: Rect, label: &str, class: AnimClass
         _ => Icon::AnimPath,
     };
     icons::paint(p, Rect::from_center_size(pos2(r.center().x, r.min.y + 18.0), vec2(28.0, 28.0)), icon, t.text, !enabled);
-    p.text(pos2(r.center().x, r.max.y - 8.0), Align2::CENTER_CENTER, label, theme::font(10.0), if enabled { t.text } else { t.text_faint });
+    p.text(pos2(r.center().x, r.max.y - 8.0), Align2::CENTER_CENTER, tl!(label), theme::font(10.0), if enabled { t.text } else { t.text_faint });
 }
 
 /// The stored id is the one marked row. Every other id stays unmarked.

@@ -33,7 +33,7 @@ pub(super) fn transitions(app: &mut SlideApp, ui: &mut Ui) {
             vec2(54.0, 56.0),
             sel,
             |p, r, i| paint_transition_tile(p, r, shown.get(i).map(|x| (x.0, x.1)).unwrap_or(("", ""))),
-            |i| shown.get(i).map(|x| x.1.to_string()).unwrap_or_default(),
+            |i| shown.get(i).map(|x| tl!(x.1).to_string()).unwrap_or_default(),
         ) && let Some(x) = shown.get(i)
         {
             run(app, "transition.set", json!({"kind": x.0}));
@@ -41,7 +41,7 @@ pub(super) fn transitions(app: &mut SlideApp, ui: &mut Ui) {
         let more = widgets::drop_button(ui, "", vec2(14.0, 52.0), true);
         egui::Popup::menu(&more).width(480.0).show(|ui| {
             for cat in ["Subtle", "Exciting", "Dynamic Content"] {
-                ui.label(egui::RichText::new(cat).font(theme::bold(12.0)));
+                ui.label(egui::RichText::new(tl!(cat)).font(theme::bold(12.0)));
                 ui.horizontal_wrapped(|ui| {
                     for x in list.iter().filter(|x| x.2 == cat) {
                         let (r, resp) = ui.allocate_exact_size(vec2(56.0, 58.0), Sense::click());
@@ -81,13 +81,13 @@ pub(super) fn transitions(app: &mut SlideApp, ui: &mut Ui) {
                     .as_ref()
                     .and_then(|t| t.sound)
                     .and_then(|m| app.session.active().and_then(|d| d.doc.media(m).map(|i| i.name.trim_end_matches(".wav").to_string())))
-                    .unwrap_or_else(|| if stop { "[Stop Previous Sound]".into() } else { "[No Sound]".into() });
+                    .unwrap_or_else(|| tl!(if stop { "[Stop Previous Sound]" } else { "[No Sound]" }).to_string());
                 let combo = craft_ui::ComboBox::from_id_salt("transition_sound").width(140.0).selected_text(name).show_ui(ui, |ui| {
                     let none = cur.as_ref().is_none_or(|t| t.sound.is_none() && !t.stop_sound);
-                    if ui.selectable_label(none, "[No Sound]").clicked() {
+                    if ui.selectable_label(none, tl!("[No Sound]")).clicked() {
                         run(app, "transition.sound", json!({"none": true}));
                     }
-                    if ui.selectable_label(stop, "[Stop Previous Sound]").clicked() {
+                    if ui.selectable_label(stop, tl!("[Stop Previous Sound]")).clicked() {
                         run(app, "transition.sound", json!({"stopPrevious": true}));
                     }
                     ui.separator();
@@ -235,7 +235,7 @@ pub fn paint_transition_tile(p: &egui::Painter, r: Rect, (id, label): (&str, &st
         }
     }
     p.rect_stroke(pic, CornerRadius::same(2), Stroke::new(1.0, Color32::from_rgb(0x9B, 0xB4, 0xDB)), egui::StrokeKind::Inside);
-    p.text(pos2(r.center().x, r.max.y - 7.0), Align2::CENTER_CENTER, label, theme::font(10.0), t.text);
+    p.text(pos2(r.center().x, r.max.y - 7.0), Align2::CENTER_CENTER, tl!(label), theme::font(10.0), t.text);
 }
 
 /// One row of Transitions ▸ Effect Options: the stored option and whether it is the current one.

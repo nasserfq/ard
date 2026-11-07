@@ -23,7 +23,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                     paint_theme_tile(p, r, th);
                 }
             },
-            |i| names.get(i).cloned().unwrap_or_default(),
+            |i| names.get(i).map(|n| tl!(n).to_string()).unwrap_or_default(),
         ) && let Some(n) = names.get(i)
         {
             run(app, "design.theme", json!({"name": n}));
