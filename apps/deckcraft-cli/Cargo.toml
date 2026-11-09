@@ -20,3 +20,7 @@ serde_json = { workspace = true }
 
 [dev-dependencies]
 zip = { workspace = true }
+
+[build-dependencies]
+# VERSIONINFO for ard-cli.exe; build.rs only uses it when the target is Windows.
+winresource = "0.1"
