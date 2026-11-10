@@ -162,7 +162,7 @@ impl Client {
     pub fn file(self, dirs: &Dirs) -> PathBuf {
         let h = &dirs.home;
         match self {
-            Client::Claude => dirs.config.join("Claude").join("claude_desktop_config.json"),
+            Client::Claude => claude_store_dir(dirs).unwrap_or_else(|| dirs.config.join("Claude")).join(CLAUDE_FILE),
             Client::ClaudeCode => h.join(".claude.json"),
             Client::Codex => h.join(".codex").join("config.toml"),
             Client::Cursor => h.join(".cursor").join("mcp.json"),
@@ -181,6 +181,7 @@ impl Client {
                 dirs.config.join("Claude").is_dir()
                     || (dirs.macos && Path::new("/Applications/Claude.app").is_dir())
                     || dirs.local.as_ref().is_some_and(|l| l.join("AnthropicClaude").is_dir())
+                    || claude_store_dir(dirs).is_some()
             }
             Client::ClaudeCode => h.join(".claude.json").is_file() || h.join(".claude").is_dir(),
             Client::Codex => h.join(".codex").is_dir(),
@@ -191,6 +192,41 @@ impl Client {
             Client::LmStudio => h.join(".lmstudio").is_dir(),
         }
     }
+}
+
+const CLAUDE_FILE: &str = "claude_desktop_config.json";
+
+/// Claude from the Microsoft Store (an MSIX package, the usual install on Windows) does not read
+/// `%APPDATA%\Claude`: Windows gives the package its own copy of that folder under
+/// `%LOCALAPPDATA%\Packages\Claude_<publisher id>\LocalCache\Roaming\Claude`, and a settings file
+/// there hides the one in `%APPDATA%`. This is that folder, when the package is installed.
+fn claude_store_dir(dirs: &Dirs) -> Option<PathBuf> {
+    let packages = dirs.local.as_ref()?.join("Packages");
+    let known = packages.join("Claude_pzs8sxrjxfjjc");
+    let mut found: Vec<PathBuf> = if known.is_dir() {
+        vec![known]
+    } else {
+        // The publisher id could change: look for any `Claude_*` package (bounded: a few hundred
+        // packages is usual).
+        std::fs::read_dir(&packages)
+            .ok()?
+            .flatten()
+            .take(10_000)
+            .filter(|e| e.file_name().to_string_lossy().starts_with("Claude_"))
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .collect()
+    };
+    found.sort();
+    found.into_iter().next().map(|p| p.join("LocalCache").join("Roaming").join("Claude"))
+}
+
+/// For Claude from the Microsoft Store, the classic `%APPDATA%\Claude` settings file as well, when
+/// that folder exists (an older Claude install reads it). `None` when it is the same file.
+fn claude_classic_file(dirs: &Dirs) -> Option<PathBuf> {
+    claude_store_dir(dirs)?;
+    let dir = dirs.config.join("Claude");
+    dir.is_dir().then(|| dir.join(CLAUDE_FILE))
 }
 
 /// Where an AI app stands with the server.
@@ -289,10 +325,21 @@ fn json_entry(server: &Server, typed: bool) -> Value {
 
 /// Add `server` to `client`'s settings (or bring an outdated entry up to date).
 pub fn connect(client: Client, dirs: &Dirs, server: &Server) -> Result<Done, Error> {
+    let done = connect_file(client, &client.file(dirs), server)?;
+    if client == Client::Claude
+        && let Some(classic) = claude_classic_file(dirs)
+    {
+        // Best effort: the Store copy above is the one Claude reads.
+        let _ = connect_file(client, &classic, server);
+    }
+    Ok(done)
+}
+
+fn connect_file(client: Client, path: &Path, server: &Server) -> Result<Done, Error> {
     if !valid_key(&server.key) {
         return Err(Error::BadKey(server.key.clone()));
     }
-    let path = client.file(dirs);
+    let path = path.to_path_buf();
     let text = read(&path)?;
     match client.format() {
         Format::Json { key, typed } => {
@@ -338,7 +385,17 @@ pub fn connect(client: Client, dirs: &Dirs, server: &Server) -> Result<Done, Err
 
 /// Take `server` out of `client`'s settings. Nothing happens when it isn't there.
 pub fn disconnect(client: Client, dirs: &Dirs, server: &Server) -> Result<(), Error> {
-    let path = client.file(dirs);
+    disconnect_file(client, &client.file(dirs), server)?;
+    if client == Client::Claude
+        && let Some(classic) = claude_classic_file(dirs)
+    {
+        let _ = disconnect_file(client, &classic, server);
+    }
+    Ok(())
+}
+
+fn disconnect_file(client: Client, path: &Path, server: &Server) -> Result<(), Error> {
+    let path = path.to_path_buf();
     let Some(text) = read(&path)? else { return Ok(()) };
     match client.format() {
         Format::Json { key, .. } => {
