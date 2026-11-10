@@ -148,3 +148,45 @@ fn client_ids_round_trip() {
     }
     assert_eq!(Client::from_id("nope"), None);
 }
+
+#[test]
+fn claude_from_the_microsoft_store_gets_its_own_settings_file() {
+    let (tmp, mut dirs, server) = setup();
+    let local = tmp.path().join("local");
+    dirs.local = Some(local.clone());
+    // Claude's classic folder exists too (an older install, or another app created it).
+    let classic = dirs.config.join("Claude");
+    std::fs::create_dir_all(&classic).unwrap();
+    let store = local.join("Packages").join("Claude_pzs8sxrjxfjjc").join("LocalCache").join("Roaming").join("Claude");
+    std::fs::create_dir_all(&store).unwrap();
+    std::fs::write(store.join("claude_desktop_config.json"), r#"{"preferences":{"x":1}}"#).unwrap();
+
+    assert_eq!(Client::Claude.file(&dirs), store.join("claude_desktop_config.json"));
+    assert_eq!(connect(Client::Claude, &dirs, &server).unwrap(), Done::Saved);
+    assert_eq!(state(Client::Claude, &dirs, &server), State::Connected);
+    let v: Value = serde_json::from_str(&std::fs::read_to_string(store.join("claude_desktop_config.json")).unwrap()).unwrap();
+    assert_eq!(v["preferences"]["x"], 1);
+    assert_eq!(v["mcpServers"]["ard"]["args"], json!(["mcp"]));
+    // The classic file is kept in step.
+    let c: Value = serde_json::from_str(&std::fs::read_to_string(classic.join("claude_desktop_config.json")).unwrap()).unwrap();
+    assert_eq!(c["mcpServers"]["ard"]["args"], json!(["mcp"]));
+
+    disconnect(Client::Claude, &dirs, &server).unwrap();
+    assert_eq!(state(Client::Claude, &dirs, &server), State::NotConnected);
+    let c: Value = serde_json::from_str(&std::fs::read_to_string(classic.join("claude_desktop_config.json")).unwrap()).unwrap();
+    assert!(c["mcpServers"].get("ard").is_none());
+}
+
+#[test]
+fn claude_store_package_with_another_publisher_id_is_found() {
+    let (tmp, mut dirs, _server) = setup();
+    let local = tmp.path().join("local");
+    dirs.local = Some(local.clone());
+    assert!(!Client::Claude.installed(&dirs));
+    std::fs::create_dir_all(local.join("Packages").join("Claude_otherid")).unwrap();
+    assert!(Client::Claude.installed(&dirs));
+    assert_eq!(
+        Client::Claude.file(&dirs),
+        local.join("Packages").join("Claude_otherid").join("LocalCache").join("Roaming").join("Claude").join("claude_desktop_config.json")
+    );
+}
