@@ -314,6 +314,8 @@ icons! {
     Collapse => "collapse",
     Expand => "expand",
     Pin => "pin",
+    /// A plug on its cord: Connect to AI Apps.
+    ConnectAi => "connect-ai",
     // File tab (Backstage)
     BackCircle => "back-circle",
     SaveAs => "save-as",

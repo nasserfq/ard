@@ -56,3 +56,15 @@ pub(super) fn review(app: &mut SlideApp, ui: &mut Ui) {
         }
     });
 }
+
+/// Help: About, updates, the command palette and Connect to AI Apps («ربط مع الذكاء الاصطناعي»).
+pub(super) fn help(app: &mut SlideApp, ui: &mut Ui) {
+    group(ui, |ui| {
+        big(app, ui, Icon::Help, "About", "app.about", json!({}));
+        big(app, ui, Icon::Loop, "Check for\nUpdates…", "app.checkUpdates", json!({}));
+    });
+    group(ui, |ui| {
+        big(app, ui, Icon::Search, "Command\nPalette", "app.palette", json!({}));
+        big(app, ui, Icon::ConnectAi, "Connect to\nAI Apps…", "app.connectAi", json!({}));
+    });
+}

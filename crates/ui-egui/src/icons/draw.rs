@@ -1310,6 +1310,13 @@ fn draw_chrome_and_status(p: &Pen<'_>, icon: Icon) -> bool {
             p.rshape(&m(&[(-4.2, -10.0), (4.2, -10.0), (4.2, -7.0), (-4.2, -7.0)]), 0.6, R, N);
         }
 
+        I::ConnectAi => {
+            p.seg((9.0, 2.5), (9.0, 7.0), K);
+            p.seg((15.0, 2.5), (15.0, 7.0), K);
+            p.rect((6.0, 7.0, 18.0, 13.5), 1.2, t(B), B);
+            p.rline(&[(12.0, 13.5), (12.0, 17.0), (15.5, 20.5), (21.0, 20.5)], 1.2, K);
+        }
+
         // ----- File tab (Backstage) navigation: outlines in the ink colour -----
         I::BackCircle => {
             p.circle((12.0, 12.0), 9.8, N, K);
