@@ -1,7 +1,7 @@
-//! File › About › Connect to AI Apps («ربط مع الذكاء الاصطناعي»): connects عرض's MCP server
-//! (`ard-cli mcp`, shipped beside the app) to the AI apps on this computer with one button
-//! each, by writing their own settings (the `ai-connect` crate). Other MCP apps get the settings
-//! to paste. Desktop only: the web build has no MCP server and no settings files.
+//! Help › Connect to AI Apps (also File › Connect to AI Apps, File › About and Help in the menu)
+//! («ربط مع الذكاء الاصطناعي»): connects عرض's MCP server (`ard-cli mcp`, shipped beside the app)
+//! to the AI apps on this computer with one button each, by writing their own settings (the
+//! `ai-connect` crate). Other MCP apps get the settings to paste. Desktop only: the web build has no MCP server and no settings files.
 
 use crate::SlideApp;
 

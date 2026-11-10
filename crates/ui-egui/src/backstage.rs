@@ -115,6 +115,8 @@ pub enum Nav {
     Page(Page),
     Save,
     Close,
+    /// Connect to AI Apps («ربط مع الذكاء الاصطناعي»): opens its window over the presentation.
+    ConnectAi,
     Options,
 }
 
@@ -124,6 +126,8 @@ impl Nav {
             Nav::Page(p) => p.label(),
             Nav::Save => "Save",
             Nav::Close => "Close",
+            // Short: the side menu is 160 points wide. The window it opens has the full title.
+            Nav::ConnectAi => "AI Apps",
             Nav::Options => "Options",
         }
     }
@@ -132,6 +136,7 @@ impl Nav {
             Nav::Page(p) => p.icon(),
             Nav::Save => Icon::Save,
             Nav::Close => Icon::File,
+            Nav::ConnectAi => Icon::ConnectAi,
             Nav::Options => Icon::Settings,
         }
     }
@@ -144,7 +149,7 @@ pub fn entries(has_doc: bool) -> (Vec<Nav>, Vec<Nav>) {
     if has_doc {
         top.extend([Nav::Page(Page::Info), Nav::Save, Nav::Page(Page::SaveAs), Nav::Page(Page::Print), Nav::Page(Page::Export), Nav::Close]);
     }
-    (top, vec![Nav::Page(Page::About), Nav::Options])
+    (top, vec![Nav::ConnectAi, Nav::Page(Page::About), Nav::Options])
 }
 
 /// Print page: which slides.
@@ -263,6 +268,10 @@ fn act(app: &mut SlideApp, nav: Nav, current: Page) -> Option<Page> {
         Nav::Close => {
             app.close_presentation();
             Some(current)
+        }
+        Nav::ConnectAi => {
+            let _ = app.run("app.connectAi", json!({}));
+            None
         }
         Nav::Options => {
             let _ = app.run("app.preferences", json!({}));

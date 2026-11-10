@@ -2466,12 +2466,52 @@ fn connect_ai_apps_window_opens_and_unknown_apps_are_refused() {
     let e = h.state_mut().run("app.connectAi", json!({"client": "nope"})).unwrap_err();
     assert!(e.contains("unknown AI app") && e.contains("claudeCode"), "{e}");
     h.run_steps(3);
-    assert!(h.query_by_label("Connect to AI Apps").is_some(), "the window shows");
+    let window = egui::accesskit::Role::Window;
+    assert!(h.query_by_role_and_label(window, "Connect to AI Apps").is_some(), "the window shows");
     h.get_by_label("Close").click();
     h.run_steps(3);
-    assert!(h.query_by_label("Connect to AI Apps").is_none(), "Close closes it");
+    assert!(h.query_by_role_and_label(window, "Connect to AI Apps").is_none(), "Close closes it");
     if let Some(ar) = crate::i18n::Lang::from_code("ar") {
         for text in ["Connect to AI Apps", "Connect", "Disconnect", "Copy Settings", "Connected ✓"] {
+            assert_ne!(crate::i18n::tr(ar, text), text, "{text} has an Arabic translation");
+        }
+    }
+}
+
+/// Connect to AI Apps («ربط مع الذكاء الاصطناعي») is easy to find, as in كلمة: a button on the
+/// Help tab, an entry in File's side menu (AI Apps, above About) and in the Help menu; each opens the window.
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn connect_ai_apps_is_on_the_help_tab_and_in_the_file_menu() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+        |ui, app: &mut SlideApp| {
+            app.logic(ui.ctx());
+            app.ui(ui);
+        },
+        SlideApp::new(Session::with_new(), Services::default()),
+    );
+    h.run_steps(2);
+    h.get_by_label("Help").click();
+    h.run_steps(3);
+    assert_eq!(h.state().ui.tab, "Help");
+    h.get_by_label("Connect to AI Apps…").click();
+    h.run_steps(3);
+    assert!(h.state().connect_ai.open, "Help › Connect to AI Apps opens the window");
+    h.get_by_label("Close").click();
+    h.run_steps(3);
+    assert!(!h.state().connect_ai.open);
+
+    h.state_mut().open_backstage(crate::backstage::Page::Home);
+    h.run_steps(3);
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "AI Apps").click();
+    h.run_steps(3);
+    assert!(h.state().connect_ai.open && !h.state().backstage_open(), "File › Connect to AI Apps opens it over the presentation");
+
+    let help = crate::menus::menu_tree().into_iter().find(|(name, _)| *name == "Help").map(|(_, items)| items).unwrap_or_default();
+    assert!(help.iter().any(|(label, id)| *label == "Connect to AI Apps…" && *id == "app.connectAi"), "the Help menu lists it");
+    if let Some(ar) = crate::i18n::Lang::from_code("ar") {
+        for text in ["Help", "AI Apps", "Connect to\nAI Apps…", "Connect to AI Apps…", "Check for\nUpdates…", "Command\nPalette"] {
             assert_ne!(crate::i18n::tr(ar, text), text, "{text} has an Arabic translation");
         }
     }
