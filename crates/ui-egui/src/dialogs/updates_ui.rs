@@ -15,20 +15,27 @@ pub(crate) struct Runtime {
     check_requested: bool,
     /// A manual check's result dialog is showing (checking, up to date or failed).
     result_open: bool,
+    /// A store copy's Help > Check for Updates…: the next `tick` opens the store's updates page.
+    open_store: bool,
 }
 
 impl Default for Runtime {
     fn default() -> Self {
-        Self { updater: Updater::new(&crate::UPDATE_APP, VERSION), enabled: false, check_requested: false, result_open: false }
+        Self { updater: Updater::new(&crate::UPDATE_APP, VERSION), enabled: false, check_requested: false, result_open: false, open_store: false }
     }
 }
 
+/// A store copy is updated by its store (`craft_update::store`), so it never checks at start.
 pub(crate) fn enable(app: &mut SlideApp) {
-    app.updates_rt.enabled = true;
+    app.updates_rt.enabled = !craft_update::store::installed();
 }
 
 /// Help > Check for Updates…: runs a check and reports the outcome either way.
 pub(crate) fn request_check(app: &mut SlideApp) {
+    if craft_update::store::installed() {
+        app.updates_rt.open_store = true;
+        return;
+    }
     if !matches!(app.updates_rt.updater.status(), Status::Checking) {
         app.updates_rt.check_requested = true;
         app.updates_rt.result_open = true;
@@ -37,6 +44,9 @@ pub(crate) fn request_check(app: &mut SlideApp) {
 
 pub(crate) fn tick(app: &mut SlideApp, ctx: &egui::Context) {
     let rt = &mut app.updates_rt;
+    if std::mem::take(&mut rt.open_store) {
+        ctx.open_url(egui::OpenUrl::new_tab(craft_update::store::updates_url()));
+    }
     if std::mem::take(&mut rt.check_requested) {
         rt.updater.check_now(ctx);
     } else if rt.enabled {
